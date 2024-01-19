@@ -22,8 +22,7 @@ if st.button("get info"):
         st.warning("Please enter a valid URL")
 
 if st.session_state != {}:
-    selected_video_format_index = st.radio("Video Format:", st.session_state[0])
-    video_format = st.session_state[0][selected_video_format_index]
+    video_format = st.radio("Video Format:", st.session_state[0])
 
     if st.button("download"):
         with st.spinner(text="downloading"):
