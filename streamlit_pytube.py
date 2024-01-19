@@ -12,8 +12,8 @@ if st.button("get info"):
         try:
             with st.spinner(text="getting info"):
                 yt = YouTube(video_url)
-                video_formats = yt.streams.filter(file_extension="mp4")
-                st.session_state[0] = video_formats
+                file_formats = yt.streams.filter(file_extension="mp4")
+                st.session_state[0] = file_formats
 
         except Exception as e:
             st.error(f"Error: {e}")
@@ -21,22 +21,28 @@ if st.button("get info"):
         st.warning("Please enter a valid URL")
 
 if st.session_state != {}:
-    video_format = st.radio("Video Format:", st.session_state[0])
+    file_format = st.radio("File Format:", st.session_state[0])
+
+    # Determine file extension based on the type of stream
+    if "audio" in file_format.type:
+        file_endwith = ".mp3"
+    else:
+        file_endwith = ".mp4"
 
     if st.button("download"):
         with st.spinner(text="downloading"):
             buffer = BytesIO()
-            video_format.stream_to_buffer(buffer=buffer)
+            file_format.stream_to_buffer(buffer=buffer)
 
             # Get the raw bytes from the buffer
             video_bytes = buffer.getvalue()
-        
+
         # Create a download button with raw bytes data
         download_button = st.download_button(
             label="Click here to download",
             data=video_bytes,
-            key=f"{video_format.title}.mp4",
-            file_name=f"{video_format.title}.mp4",
+            key=f"{file_format.title}{file_endwith}",
+            file_name=f"{file_format.title}{file_endwith}",
         )
 
         st.success("Successfully Downloaded")
