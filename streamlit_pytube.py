@@ -1,7 +1,6 @@
 import streamlit as st
 from pytube import YouTube
 from io import BytesIO
-import base64
 
 st.title("YouTube Downloader")
 
