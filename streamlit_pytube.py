@@ -28,13 +28,13 @@ if st.session_state != {}:
             buffer = BytesIO()
             video_format.stream_to_buffer(buffer=buffer)
 
-            # Convert the video data to base64
-            video_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            # Get the raw bytes from the buffer
+            video_bytes = buffer.getvalue()
         
-        # Create a download button
+        # Create a download button with raw bytes data
         download_button = st.download_button(
             label="Click here to download",
-            data=video_base64,
+            data=video_bytes,
             key=f"{video_format.title}.mp4",
             file_name=f"{video_format.title}.mp4",
         )
