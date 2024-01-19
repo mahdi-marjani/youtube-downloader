@@ -12,31 +12,45 @@ if st.button("get info"):
         try:
             with st.spinner(text="getting info"):
                 yt = YouTube(video_url)
-                video_formats = yt.streams.filter(file_extension="mp4")
-                st.session_state[0] = video_formats
+                video_formats = yt.streams.filter(file_extension="mp4", progressive=True)
+                audio_formats = yt.streams.filter(only_audio=True)
+
+                st.session_state['video_formats'] = video_formats
+                st.session_state['audio_formats'] = audio_formats
 
         except Exception as e:
             st.error(f"Error: {e}")
     else:
         st.warning("Please enter a valid URL")
 
-if st.session_state != {}:
-    video_format = st.radio("Video Format:", st.session_state[0])
+if 'video_formats' in st.session_state and 'audio_formats' in st.session_state:
+    video_format = st.radio("Select Video Format:", st.session_state['video_formats'])
+    audio_format = st.radio("Select Audio Format:", st.session_state['audio_formats'])
 
     if st.button("download"):
         with st.spinner(text="downloading"):
-            buffer = BytesIO()
-            video_format.stream_to_buffer(buffer=buffer)
+            video_buffer = BytesIO()
+            video_format.stream_to_buffer(buffer=video_buffer)
+            video_bytes = video_buffer.getvalue()
 
-            # Get the raw bytes from the buffer
-            video_bytes = buffer.getvalue()
-        
-        # Create a download button with raw bytes data
-        download_button = st.download_button(
-            label="Click here to download",
+            audio_buffer = BytesIO()
+            audio_format.stream_to_buffer(buffer=audio_buffer)
+            audio_bytes = audio_buffer.getvalue()
+
+        # Create a download button for video
+        video_download_button = st.download_button(
+            label="Download Video",
             data=video_bytes,
             key=f"{video_format.title}.mp4",
             file_name=f"{video_format.title}.mp4",
+        )
+
+        # Create a download button for audio
+        audio_download_button = st.download_button(
+            label="Download Audio",
+            data=audio_bytes,
+            key=f"{audio_format.title}.mp3",
+            file_name=f"{audio_format.title}.mp3",
         )
 
         st.success("Successfully Downloaded")
