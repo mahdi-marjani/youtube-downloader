@@ -2,6 +2,7 @@ import streamlit as st
 from pytube import YouTube
 from io import BytesIO
 import base64
+from moviepy.editor import VideoFileClip, AudioFileClip
 
 st.title("YouTube Downloader")
 
@@ -28,12 +29,30 @@ if st.session_state != {}:
 
     if st.button("download"):
         with st.spinner(text="downloading"):
-            buffer = BytesIO()
-            # Combine video and audio streams
-            video_format.stream_to_buffer(buffer=buffer, audio_file=st.session_state[0]["audio"])
+            # Download video and audio separately
+            video_buffer = BytesIO()
+            audio_buffer = BytesIO()
+
+            video_format.stream_to_buffer(buffer=video_buffer)
+            st.session_state[0]["audio"].stream_to_buffer(buffer=audio_buffer)
+
+            # Reset buffers to start position
+            video_buffer.seek(0)
+            audio_buffer.seek(0)
+
+            # Combine video and audio using moviepy
+            video_clip = VideoFileClip(video_buffer)
+            audio_clip = AudioFileClip(audio_buffer)
+
+            # Set audio of video clip with audio clip
+            video_clip = video_clip.set_audio(audio_clip)
+
+            # Write the final result to BytesIO buffer
+            final_buffer = BytesIO()
+            video_clip.write_videofile(final_buffer, codec="libx264", audio_codec="aac")
 
             # Get the raw bytes from the buffer
-            video_bytes = buffer.getvalue()
+            video_bytes = final_buffer.getvalue()
 
         # Create a download button with raw bytes data
         download_button = st.download_button(
