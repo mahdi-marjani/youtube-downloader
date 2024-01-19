@@ -12,8 +12,11 @@ if st.button("get info"):
         try:
             with st.spinner(text="getting info"):
                 yt = YouTube(video_url)
-                video_formats = yt.streams.filter(file_extension="mp4")
-                st.session_state[0] = video_formats
+                # Get both video and audio streams
+                video_formats = yt.streams.filter(file_extension="mp4", progressive=True)
+                audio_formats = yt.streams.get_audio_only()
+
+                st.session_state[0] = {"video": video_formats, "audio": audio_formats}
 
         except Exception as e:
             st.error(f"Error: {e}")
@@ -21,16 +24,17 @@ if st.button("get info"):
         st.warning("Please enter a valid URL")
 
 if st.session_state != {}:
-    video_format = st.radio("Video Format:", st.session_state[0])
+    video_format = st.radio("Video Format:", st.session_state[0]["video"])
 
     if st.button("download"):
         with st.spinner(text="downloading"):
             buffer = BytesIO()
-            video_format.stream_to_buffer(buffer=buffer)
+            # Combine video and audio streams
+            video_format.stream_to_buffer(buffer=buffer, audio_file=st.session_state[0]["audio"])
 
             # Get the raw bytes from the buffer
             video_bytes = buffer.getvalue()
-        
+
         # Create a download button with raw bytes data
         download_button = st.download_button(
             label="Click here to download",
