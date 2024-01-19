@@ -1,41 +1,42 @@
 import streamlit as st
 from pytube import YouTube
 from io import BytesIO
+import base64
 
 st.title("YouTube Downloader")
 
 video_url = st.text_input("Video URL:")
 
-if st.button("Get Info"):
+if st.button("get info"):
     if video_url:
         try:
-            with st.spinner(text="Getting Info"):
+            with st.spinner(text="getting info"):
                 yt = YouTube(video_url)
-                formats = yt.streams.filter(file_extension="mp4", progressive=True) + yt.streams.filter(only_audio=True)
+                video_formats = yt.streams.filter(file_extension="mp4")
+                st.session_state[0] = video_formats
 
-                st.session_state['formats'] = formats
-
-            st.success("Info Retrieved Successfully!")
         except Exception as e:
             st.error(f"Error: {e}")
     else:
         st.warning("Please enter a valid URL")
 
-if 'formats' in st.session_state:
-    selected_format = st.radio("Select Format:", st.session_state['formats'])
+if st.session_state != {}:
+    video_format = st.radio("Video Format:", st.session_state[0])
 
-    if st.button("Download"):
-        with st.spinner(text="Downloading"):
+    if st.button("download"):
+        with st.spinner(text="downloading"):
             buffer = BytesIO()
-            selected_format.stream_to_buffer(buffer=buffer)
-            file_bytes = buffer.getvalue()
+            video_format.stream_to_buffer(buffer=buffer)
 
-        # Create a download button for the selected format
-        st.download_button(
+            # Get the raw bytes from the buffer
+            video_bytes = buffer.getvalue()
+        
+        # Create a download button with raw bytes data
+        download_button = st.download_button(
             label="Click here to download",
-            data=file_bytes,
-            key=f"{selected_format.title}.{selected_format.extension}",
-            file_name=f"{selected_format.title}.{selected_format.extension}",
+            data=video_bytes,
+            key=f"{video_format.title}.mp4",
+            file_name=f"{video_format.title}.mp4",
         )
 
         st.success("Successfully Downloaded")
