@@ -31,11 +31,12 @@ if st.session_state != {}:
             # Convert the video data to base64
             video_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         
-        with st.spinner(text="preparing download link"):
-            # Create a download link
-            download_link = f'<a href="data:video/mp4;base64,{video_base64}" download="{video_format.title}.mp4">Click here to download</a>'
-            
-            # Display the download link
-            st.markdown(download_link, unsafe_allow_html=True)
+        # Create a download button
+        download_button = st.download_button(
+            label="Click here to download",
+            data=video_base64,
+            key=f"{video_format.title}.mp4",
+            file_name=f"{video_format.title}.mp4",
+        )
 
         st.success("Successfully Downloaded")
