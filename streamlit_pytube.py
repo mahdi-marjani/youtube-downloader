@@ -12,7 +12,6 @@ if st.button("get info"):
         try:
             with st.spinner(text="getting info"):
                 yt = YouTube(video_url)
-
                 video_formats = yt.streams.filter(file_extension="mp4")
                 st.session_state[0] = video_formats
 
@@ -32,8 +31,11 @@ if st.session_state != {}:
             # Convert the video data to base64
             video_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         
-        with st.spinner(text="displaying video"):
-            # Display the video using HTML5 video tag
-            st.markdown(f'<video controls width="640" height="360" src="data:video/mp4;base64,{video_base64}" type="video/mp4"></video>', unsafe_allow_html=True)
+        with st.spinner(text="preparing download link"):
+            # Create a download link
+            download_link = f'<a href="data:video/mp4;base64,{video_base64}" download="{video_format.title}.mp4">Click here to download</a>'
+            
+            # Display the download link
+            st.markdown(download_link, unsafe_allow_html=True)
 
         st.success("Successfully Downloaded")
